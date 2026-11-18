@@ -11,7 +11,7 @@ window.APP_CONFIG = {
   BACKGROUND_DESKTOP: "assets/bg-desktop.jpg",   // 2560 × 1440 px
   BACKGROUND_MOBILE: "assets/bg-mobile.jpg",     // 1170 × 2532 px
 
-  COMPETITION_SUBTITLE: "เจอสินค้าที่ร้าน เลือกสินค้าที่เจอ ถ่ายรูปแบรนด์ละ 1 รูป\nกดส่งรายการ 1 ครั้ง = 1 คะแนน",
+  COMPETITION_SUBTITLE: "กดส่งรายการ 1 ครั้ง = 1 คะแนน",
 
   // รายชื่อพนักงานไม่อยู่ในไฟล์นี้ (ไฟล์นี้ใครก็เปิดดูได้บน GitHub)
   // กรอกรายชื่อในแท็บ Employees ของ Google Sheet แทน
