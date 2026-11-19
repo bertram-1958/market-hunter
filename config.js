@@ -4,14 +4,14 @@
 // ============================================================
 window.APP_CONFIG = {
   // วาง Web App URL ที่ได้จากการ Deploy Google Apps Script (ดูขั้นตอนใน README.md)
-  API_URL: "https://script.google.com/macros/s/AKfycbyPQHLGh1npL7csJn-GTBOaJ0QChRnv_5Z9svLNQAAc6wPE0bUw8xEo7LkeJlQWmnHE6A/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbxtHKdU04vvkyCqALD-40slCdYR1Vb6BExMi9dDri-zSTkKEPP70WWdhNbEFOSg3TsJ6w/exec",
 
   COMPETITION_NAME: "Market Hunter",
   // โลโก้กิจกรรมและภาพพื้นหลัง  ขนาดดูใน design-guide/image-size-guide.png
   BACKGROUND_DESKTOP: "assets/bg-desktop.jpg",   // 2560 × 1440 px
   BACKGROUND_MOBILE: "assets/bg-mobile.jpg",     // 1170 × 2532 px
 
-  COMPETITION_SUBTITLE: "กดส่งรายการ 1 ครั้ง = 1 คะแนน",
+  COMPETITION_SUBTITLE: "เจอสินค้าที่ร้าน เลือกสินค้าที่เจอ ถ่ายรูปแบรนด์ละ 1 รูป\nกดส่งรายการ 1 ครั้ง = 1 คะแนน",
 
   // รายชื่อพนักงานไม่อยู่ในไฟล์นี้ (ไฟล์นี้ใครก็เปิดดูได้บน GitHub)
   // กรอกรายชื่อในแท็บ Employees ของ Google Sheet แทน

@@ -13,7 +13,7 @@
   const els = {
     title: $("title"), subtitle: $("subtitle"),
     form: $("entry-form"),
-    department: $("department"), name: $("name"), location: $("location"), area: $("area"),
+    department: $("department"), name: $("name"), location: $("location"), area: $("area"), branch: $("branch"),
     locationOther: $("location-other"), locationOtherField: $("location-other-field"),
     brandSections: $("brand-sections"), itemsField: $("items-field"),
     submit: $("submit-btn"), status: $("form-status"),
@@ -134,6 +134,7 @@
     fillGroupedSelect(els.area, C.AREAS, "เลือกเขต / จังหวัด");
     els.location.addEventListener("change", toggleLocationOther);
     els.locationOther.addEventListener("input", () => { els.locationOther.classList.remove("invalid"); pendingId = null; });
+    els.branch.addEventListener("input", () => { pendingId = null; });
     buildBrandSections();
 
     els.department.addEventListener("change", () => {
@@ -522,6 +523,7 @@
         location: els.location.value,
         locationOther: isOther() ? els.locationOther.value.trim() : "",
         area: els.area.value,
+        branch: els.branch.value.trim(),
         items,
         images: brands.map((b) => ({ brand: b, data: brandImages[b].result.base64 })),
       };
@@ -676,7 +678,8 @@
         ul.append(it);
       });
       body.append(ul);
-      const place = h.locationOther ? `${h.location}: ${h.locationOther}` : h.location;
+      let place = h.locationOther ? `${h.location}: ${h.locationOther}` : h.location;
+      if (h.branch) place += ` ${h.branch}`;
       body.append(el("div", "h-where", `${place}, ${h.area}`));
       body.append(el("div", "h-time", formatDateTime(h.ts)));
       if (allRejected) body.append(el("span", "badge", "ไม่นับคะแนน"));
