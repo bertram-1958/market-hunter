@@ -1,7 +1,7 @@
 // Service worker: ให้แอปเปิดเร็วและเปิดได้แม้สัญญาณอ่อน
 // - ไฟล์ของแอป (หน้าเว็บ, css, js, ไอคอน): ลองโหลดใหม่จากเน็ตก่อน ถ้าช้าเกิน 3 วินาทีหรือไม่มีเน็ต ใช้ที่เก็บไว้
 // - การส่งข้อมูลและ Top 10 (Google Apps Script): ไม่ผ่าน service worker เลย
-const CACHE = "market-hunter-v15";
+const CACHE = "market-hunter-v16";
 const ASSETS = [
   "./", "./index.html", "./style.css", "./app.js", "./config.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png", "./assets/market-hunter-logo.png"

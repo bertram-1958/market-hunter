@@ -134,7 +134,7 @@
     fillGroupedSelect(els.area, C.AREAS, "เลือกเขต / จังหวัด");
     els.location.addEventListener("change", toggleLocationOther);
     els.locationOther.addEventListener("input", () => { els.locationOther.classList.remove("invalid"); pendingId = null; });
-    els.branch.addEventListener("input", () => { pendingId = null; });
+    els.branch.addEventListener("input", () => { els.branch.classList.remove("invalid"); pendingId = null; });
     buildBrandSections();
 
     els.department.addEventListener("change", () => {
@@ -377,18 +377,21 @@
   }
 
   function validate() {
+    // ช่องเลือก และช่องพิมพ์ เรียงตามลำดับในฟอร์ม
     const fields = [
-      [els.department, "department"], [els.name, "ชื่อ"], [els.location, "สถานที่ที่เจอ"], [els.area, "เขต / จังหวัด"],
+      [els.department, "department", "เลือก"], [els.name, "ชื่อ", "เลือก"], [els.location, "สถานที่ที่เจอ", "เลือก"],
+      [els.locationOther, "ชื่อสถานที่", "พิมพ์", () => isOther()],
+      [els.branch, "สาขา", "พิมพ์"], [els.area, "เขต / จังหวัด", "เลือก"],
     ];
-    const missing = fields.filter(([s]) => !s.value);
+    const missing = fields.filter(([s, , , need]) => (!need || need()) && !s.value.trim());
     missing.forEach(([s]) => s.classList.add("invalid"));
-    const otherMissing = isOther() && !els.locationOther.value.trim();
-    if (otherMissing) els.locationOther.classList.add("invalid");
-    if (missing.length || otherMissing) {
-      (missing.length ? missing[0][0] : els.locationOther).focus();
+    if (missing.length) {
+      missing[0][0].focus();
+      const pick = missing.filter((m) => m[2] === "เลือก").map((m) => m[1]);
+      const type = missing.filter((m) => m[2] === "พิมพ์").map((m) => m[1]);
       const parts = [];
-      if (missing.length) parts.push(`เลือก ${missing.map(([, label]) => label).join(", ")}`);
-      if (otherMissing) parts.push("พิมพ์ชื่อสถานที่");
+      if (pick.length) parts.push(`เลือก ${pick.join(", ")}`);
+      if (type.length) parts.push(`กรอก ${type.join(", ")}`);
       return `กรุณา${parts.join(" และ")}`;
     }
     if (!selectedItems().length) {
