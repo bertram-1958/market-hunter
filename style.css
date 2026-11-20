@@ -421,3 +421,7 @@ body { padding-bottom: 64px; }
 .b-photo-label { font-weight: 600; font-size: 0.9rem; }
 .b-photo .dropzone { min-height: 76px; background: var(--surface); }
 .brand-sec.invalid { border-color: var(--red); box-shadow: inset 4px 0 0 var(--red), 0 0 0 2px rgba(227,6,19,.25); }
+.b-photo .previews { gap: 10px; }
+.b-photo .previews li { width: calc((100% - 20px) / 3); max-width: 110px; }
+.b-photo .previews img { width: 100%; height: auto; aspect-ratio: 1; }
+.b-photo .previews .meta { white-space: nowrap; font-size: 0.66rem; overflow: hidden; text-overflow: ellipsis; }

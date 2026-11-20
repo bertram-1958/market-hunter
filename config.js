@@ -4,14 +4,14 @@
 // ============================================================
 window.APP_CONFIG = {
   // วาง Web App URL ที่ได้จากการ Deploy Google Apps Script (ดูขั้นตอนใน README.md)
-  API_URL: "https://script.google.com/macros/s/AKfycbxtHKdU04vvkyCqALD-40slCdYR1Vb6BExMi9dDri-zSTkKEPP70WWdhNbEFOSg3TsJ6w/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbyyQ9b8ioYpXk3nNm_9zO34yleFU3W4BKyQsJObZxznQOSGcFcGN_bzcKV5ZJa8g39Iwg/exec",
 
   COMPETITION_NAME: "Market Hunter",
   // โลโก้กิจกรรมและภาพพื้นหลัง  ขนาดดูใน design-guide/image-size-guide.png
   BACKGROUND_DESKTOP: "assets/bg-desktop.jpg",   // 2560 × 1440 px
   BACKGROUND_MOBILE: "assets/bg-mobile.jpg",     // 1170 × 2532 px
 
-  COMPETITION_SUBTITLE: "กดส่งรายการ 1 ครั้ง = 1 คะแนน",
+  COMPETITION_SUBTITLE: "เจอสินค้าที่ร้าน เลือกสินค้าที่เจอ ถ่ายรูปแบรนด์ละไม่เกิน 3 รูป\nกดส่งรายการ 1 ครั้ง = 1 คะแนน",
 
   // รายชื่อพนักงานไม่อยู่ในไฟล์นี้ (ไฟล์นี้ใครก็เปิดดูได้บน GitHub)
   // กรอกรายชื่อในแท็บ Employees ของ Google Sheet แทน
@@ -74,7 +74,8 @@ window.APP_CONFIG = {
   },
 
   // ---------- การบีบอัดรูป ----------
-  // รูป: 1 รูปต่อแบรนด์ที่เจอ (แนบในส่วนของแต่ละแบรนด์)
+  // รูป: แนบในส่วนของแต่ละแบรนด์ อย่างน้อย 1 รูป สูงสุดตามค่านี้
+  IMAGES_PER_BRAND: 3,
   IMAGE_MAX_DIMENSION: 1280,   // ด้านยาวสุดของรูปหลังย่อ (px)
   IMAGE_QUALITY: 0.72,         // คุณภาพ JPEG เริ่มต้น (0–1)
   IMAGE_TARGET_KB: 250,        // พยายามให้แต่ละรูปไม่เกินขนาดนี้

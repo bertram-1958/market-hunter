@@ -21,8 +21,10 @@
     toast: $("toast"),
   };
 
-  // รูป 1 รูปต่อแบรนด์: brand -> { id, promise, result: {base64, previewUrl, kb} | null, error }
+  // รูปของแต่ละแบรนด์ (สูงสุด IMAGES_PER_BRAND รูป): brand -> [{ id, promise, result, error }]
   const brandImages = {};
+  const PER_BRAND = C.IMAGES_PER_BRAND || 3;
+  const imgsOf = (brand) => brandImages[brand] || (brandImages[brand] = []);
   let submitting = false;
   let pendingId = null; // ใช้ ID เดิมเมื่อกดส่งซ้ำหลังเน็ตหลุด กันรายการซ้ำ
 
@@ -87,10 +89,10 @@
       const zone = el("label", "dropzone");
       zone.htmlFor = `ph-${bi}`;
       const inp = document.createElement("input");
-      inp.type = "file"; inp.accept = "image/*"; inp.id = `ph-${bi}`;
-      inp.addEventListener("change", () => { setBrandImage(brand, inp.files && inp.files[0]); inp.value = ""; });
+      inp.type = "file"; inp.accept = "image/*"; inp.multiple = true; inp.id = `ph-${bi}`;
+      inp.addEventListener("change", () => { addBrandImages(brand, Array.from(inp.files || [])); inp.value = ""; });
       zone.append(inp, el("span", "dz-text", "แตะเพื่อถ่ายรูปหรือเลือกรูป"));
-      photo.append(el("div", "b-photo-label", `รูปสินค้า ${brand} (1 รูป)`), zone, el("ul", "previews"));
+      photo.append(el("div", "b-photo-label", `รูปสินค้า ${brand} (0/${PER_BRAND} รูป)`), el("ul", "previews"), zone);
       sec.append(sum, list, photo);
       frag.append(sec);
     });
@@ -113,9 +115,10 @@
   function updateBrandCounts() {
     els.brandSections.querySelectorAll(".brand-sec").forEach((sec) => {
       const n = sec.querySelectorAll(".chk input:checked").length;
-      const hasPhoto = !!brandImages[sec.dataset.brand];
+      const k = imgsOf(sec.dataset.brand).length;
+      const hasPhoto = k > 0;
       sec.querySelector(".b-count").textContent = n
-        ? (hasPhoto ? `${n} สินค้า + รูป` : `${n} สินค้า, ขาดรูป`)
+        ? (hasPhoto ? `${n} สินค้า + ${k} รูป` : `${n} สินค้า, ขาดรูป`)
         : (hasPhoto ? "มีรูป, ยังไม่เลือก" : "แตะเพื่อเลือก");
       sec.classList.toggle("has-items", n > 0 || hasPhoto);
     });
@@ -240,24 +243,31 @@
   }
 
   // เริ่มย่อรูปทันทีที่เลือก -> ตอนกดส่งรูปพร้อมแล้ว ไม่ต้องรอ
-  function setBrandImage(brand, file) {
-    if (!file) return;
-    removeBrandImage(brand, true);
-    const item = { id: Math.random().toString(36).slice(2), result: null, error: null };
-    item.promise = compressImage(file)
-      .then((r) => { item.result = r; })
-      .catch((e) => { item.error = e.message; showToast(e.message); })
-      .finally(() => renderBrandPhoto(brand));
-    brandImages[brand] = item;
+  // เริ่มย่อรูปทันทีที่เลือก -> ตอนกดส่งรูปพร้อมแล้ว ไม่ต้องรอ
+  function addBrandImages(brand, files) {
+    const list = imgsOf(brand);
+    const room = PER_BRAND - list.length;
+    if (files.length > room) showToast(`แนบรูป ${brand} ได้สูงสุด ${PER_BRAND} รูป`);
+    files.slice(0, Math.max(0, room)).forEach((file) => {
+      const item = { id: Math.random().toString(36).slice(2), result: null, error: null };
+      item.promise = compressImage(file)
+        .then((r) => { item.result = r; })
+        .catch((e) => { item.error = e.message; showToast(e.message); })
+        .finally(() => renderBrandPhoto(brand));
+      list.push(item);
+    });
     pendingId = null;
     renderBrandPhoto(brand);
   }
 
-  function removeBrandImage(brand, silent) {
-    const item = brandImages[brand];
-    if (item && item.result) URL.revokeObjectURL(item.result.previewUrl);
-    delete brandImages[brand];
-    if (!silent) { pendingId = null; renderBrandPhoto(brand); }
+  function removeBrandImage(brand, id) {
+    const list = imgsOf(brand);
+    const i = list.findIndex((x) => x.id === id);
+    if (i < 0) return;
+    if (list[i].result) URL.revokeObjectURL(list[i].result.previewUrl);
+    list.splice(i, 1);
+    pendingId = null;
+    renderBrandPhoto(brand);
   }
 
   function brandSec(brand) {
@@ -267,37 +277,43 @@
   function renderBrandPhoto(brand) {
     const sec = brandSec(brand);
     if (!sec) return;
-    const zone = sec.querySelector(".dropzone");
-    const prev = sec.querySelector(".previews");
-    const item = brandImages[brand];
-    zone.hidden = !!item;
-    if (!item) { prev.replaceChildren(); updateBrandCounts(); return; }
-    const li = document.createElement("li");
-    const img = document.createElement("img");
-    img.alt = `รูปสินค้า ${brand}`;
-    const meta = el("span", "meta");
-    if (item.result) {
-      img.src = item.result.previewUrl;
-      const o = item.result.origKb;
-      meta.textContent = o ? `${o >= 1024 ? (o / 1024).toFixed(1) + " MB" : o + " KB"} → ${item.result.kb} KB` : `${item.result.kb} KB`;
-    } else if (item.error) {
-      meta.textContent = "ใช้รูปนี้ไม่ได้";
-    } else {
-      li.classList.add("busy");
-      meta.textContent = "กำลังย่อรูป…";
-    }
-    const rm = el("button", "remove", "×");
-    rm.type = "button";
-    rm.setAttribute("aria-label", `ลบรูป ${brand}`);
-    rm.addEventListener("click", () => removeBrandImage(brand));
-    li.append(img, meta, rm);
-    prev.replaceChildren(li);
-    sec.classList.remove("invalid");
+    const list = imgsOf(brand);
+    sec.querySelector(".dropzone").hidden = list.length >= PER_BRAND;
+    sec.querySelector(".b-photo-label").textContent = `รูปสินค้า ${brand} (${list.length}/${PER_BRAND} รูป)`;
+    const frag = document.createDocumentFragment();
+    list.forEach((item) => {
+      const li = document.createElement("li");
+      const img = document.createElement("img");
+      img.alt = `รูปสินค้า ${brand}`;
+      const meta = el("span", "meta");
+      if (item.result) {
+        img.src = item.result.previewUrl;
+        const o = item.result.origKb;
+        meta.textContent = o ? `${o >= 1024 ? (o / 1024).toFixed(1) + " MB" : o + " KB"} → ${item.result.kb} KB` : `${item.result.kb} KB`;
+      } else if (item.error) {
+        meta.textContent = "ใช้รูปนี้ไม่ได้";
+      } else {
+        li.classList.add("busy");
+        meta.textContent = "กำลังย่อรูป…";
+      }
+      const rm = el("button", "remove", "×");
+      rm.type = "button";
+      rm.setAttribute("aria-label", `ลบรูป ${brand}`);
+      rm.addEventListener("click", () => removeBrandImage(brand, item.id));
+      li.append(img, meta, rm);
+      frag.append(li);
+    });
+    sec.querySelector(".previews").replaceChildren(frag);
+    if (list.length) sec.classList.remove("invalid");
     updateBrandCounts();
   }
 
   function clearImages() {
-    Object.keys(brandImages).forEach((b) => removeBrandImage(b));
+    Object.keys(brandImages).forEach((b) => {
+      brandImages[b].forEach((x) => x.result && URL.revokeObjectURL(x.result.previewUrl));
+      brandImages[b] = [];
+      renderBrandPhoto(b);
+    });
   }
 
   /* ---------------- Leaderboard ---------------- */
@@ -403,11 +419,11 @@
     for (const sec of els.brandSections.querySelectorAll(".brand-sec")) {
       const brand = sec.dataset.brand;
       const n = sec.querySelectorAll(".chk input:checked").length;
-      const img = brandImages[brand];
+      const list = imgsOf(brand);
       let msg = "";
-      if (n && !img) msg = `กรุณาแนบรูปสินค้า ${brand}`;
-      else if (img && img.error) msg = `รูป ${brand} ใช้ไม่ได้ กรุณาเลือกรูปใหม่`;
-      else if (img && !n) msg = `กรุณาเลือกสินค้า ${brand} ที่อยู่ในรูป หรือลบรูปออก`;
+      if (n && !list.length) msg = `กรุณาแนบรูปสินค้า ${brand} อย่างน้อย 1 รูป`;
+      else if (list.some((x) => x.error)) msg = `มีรูป ${brand} ที่ใช้ไม่ได้ กรุณาลบแล้วเลือกรูปใหม่`;
+      else if (list.length && !n) msg = `กรุณาเลือกสินค้า ${brand} ที่อยู่ในรูป หรือลบรูปออก`;
       if (msg) {
         sec.open = true;
         sec.classList.add("invalid");
@@ -514,8 +530,8 @@
       // รูปถูกย่อไว้ตั้งแต่ตอนเลือก ปกติขั้นนี้เสร็จทันที
       const items = selectedItems();
       const brands = [...new Set(items.map((it) => it.brand))];
-      await Promise.all(brands.map((b) => brandImages[b].promise));
-      const bad = brands.find((b) => !brandImages[b].result);
+      await Promise.all(brands.flatMap((b) => imgsOf(b).map((x) => x.promise)));
+      const bad = brands.find((b) => imgsOf(b).some((x) => !x.result));
       if (bad) throw new Error(`รูป ${bad} ใช้ไม่ได้ กรุณาเลือกรูปใหม่`);
 
       const payload = {
@@ -528,7 +544,7 @@
         area: els.area.value,
         branch: els.branch.value.trim(),
         items,
-        images: brands.map((b) => ({ brand: b, data: brandImages[b].result.base64 })),
+        images: brands.flatMap((b) => imgsOf(b).map((x) => ({ brand: b, data: x.result.base64 }))),
       };
       queue.push({ payload, tries: 0 });
       saveQueue();
